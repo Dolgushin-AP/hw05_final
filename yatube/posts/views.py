@@ -41,7 +41,7 @@ def profile(request, username):
     paginator = paginate(posts, request)
     following = (request.user.is_authenticated
                  and request.user.follower.filter(author=author).exists()
-    )
+                )
     context = {
         'author': author,
         'page_obj': paginator,

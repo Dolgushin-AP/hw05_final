@@ -132,6 +132,7 @@ class PostFormTests(TestCase):
         self.assertRedirects(response, f'{login}?next={create}')
         self.assertEqual(Post.objects.count(), posts_count)
 
+
 class CommentFormTests(TestCase):
     @classmethod
     def setUpClass(cls):

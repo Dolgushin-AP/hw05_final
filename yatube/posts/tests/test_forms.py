@@ -11,6 +11,7 @@ from ..models import Group, Post, User, Comment
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
+
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostFormTests(TestCase):
     @classmethod
@@ -34,7 +35,7 @@ class PostFormTests(TestCase):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)       
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
         self.guest_client = Client()
@@ -125,7 +126,7 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True,
         )
-        create = reverse(name, args=args)  
+        create = reverse(name, args=args)
         name, args = self.user_login_url
         login = reverse(name, args=args)
         self.assertRedirects(response, f'{login}?next={create}')

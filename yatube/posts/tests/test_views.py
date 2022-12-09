@@ -7,8 +7,8 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.conf import settings
 
-from ..forms import PostForm, CommentForm
-from ..models import Group, Post, User, Comment, Follow
+from ..forms import PostForm
+from ..models import Group, Post, User, Follow
 
 
 class PostViewsTests(TestCase):

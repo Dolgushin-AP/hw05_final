@@ -1,5 +1,3 @@
-from math import ceil
-
 from django import forms
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -97,6 +95,7 @@ class PostViewsTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+#        cache.clear()
 
     def test_urls_all_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -234,11 +233,21 @@ class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='noname')
+        cls.user = User.objects.create(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='slug_slug',
             description='Тестовое описание',
+        )
+        cls.index_url = ('posts:index', None,)
+        cls.group_url = ('posts:group_list', (cls.group.slug,))
+        cls.profile_url = ('posts:profile', (cls.user,))
+        cls.follow_index_url = ('posts:follow_index', None)
+        cls.pagin_urls = (
+            cls.index_url,
+            cls.group_url,
+            cls.profile_url,
+            cls.follow_index_url,
         )
         cls.ALL_POSTS = 13
         Post.objects.bulk_create(
@@ -248,37 +257,33 @@ class PaginatorViewsTest(TestCase):
 
     def setUp(self):
         self.guest_client = Client()
-        self.pagin_urls = (
-            reverse('posts:index'),
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.user)
+        self.authorized_client.get(
             reverse(
-                'posts:group_list',
-                kwargs={'slug': self.group.slug}
-            ),
-            reverse(
-                'posts:profile',
-                kwargs={'username': self.user.username}
+                'posts:profile_follow',
+                args=(self.user,)
             )
         )
+#        cache.clear()
 
-    def test_first_page_contains_ten_records(self):
-        """Проверка пагинатора. 10 записей на первой странице"""
-        for url in self.pagin_urls:
-            response = self.guest_client.get(url)
-            self.assertEqual(
-                len(response.context['page_obj']),
-                settings.POSTS_PER_PAGE
-            )
-
-    def test_second_page_contains_three_records(self):
-        """Проверка пагинатора. 3 записи на второй странице"""
-        page_number = ceil(self.ALL_POSTS / settings.POSTS_PER_PAGE)
-        for url in self.pagin_urls:
-            response = self.guest_client.get(
-                url + '?page=' + str(page_number)
-            )
-            self.assertEqual(
-                len(response.context['page_obj']),
-                (self.ALL_POSTS - (
-                    page_number - 1
-                ) * settings.POSTS_PER_PAGE)
-            )
+    def test_paginator_ten_records_on_first_page_and_three_on_second(self):
+        """Проверка пагинатора. 10 записей на первой странице
+        и 3 записи на второй странице"""
+#        cache.clear()
+        pages = (
+            ('?page=1', settings.POSTS_PER_PAGE),
+            ('?page=2', self.ALL_POSTS - settings.POSTS_PER_PAGE)
+        )
+        for url, args in self.pagin_urls:
+            with self.subTest(url=url):
+                for page, numbers in pages:
+                    with self.subTest(page=page):
+                        response = self.authorized_client.get(
+                            reverse(url, args=args) + page
+                        )
+                        print(response.context.get('page_obj'))
+                        self.assertEqual(
+                            len(response.context['page_obj'].object_list),
+                            numbers
+                        )

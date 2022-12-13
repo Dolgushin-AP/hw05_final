@@ -32,6 +32,16 @@ class Group(models.Model):
         return f"{self.title}"
 
 
+class TextModel(models.Model):
+    """ Модель для текста """
+    text = models.TextField(
+        verbose_name='Текст поста',
+        help_text='Введите текст поста',
+    )
+class Meta:
+        abstract = True
+
+
 class Post(models.Model):
     """ Модель для постов """
     group = models.ForeignKey(
@@ -76,7 +86,7 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(
-        'Post',
+        Post,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
@@ -125,3 +135,7 @@ class Follow(models.Model):
         ordering = ('-author',)
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'], name='unique_follow')
+        ]

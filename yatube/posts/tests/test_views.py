@@ -233,7 +233,8 @@ class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create(username='auth')
+        cls.user = User.objects.create(username='noauth')
+        cls.author = User.objects.create(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='slug_slug',
@@ -241,7 +242,7 @@ class PaginatorViewsTest(TestCase):
         )
         cls.index_url = ('posts:index', None,)
         cls.group_url = ('posts:group_list', (cls.group.slug,))
-        cls.profile_url = ('posts:profile', (cls.user,))
+        cls.profile_url = ('posts:profile', (cls.author,))
         cls.follow_index_url = ('posts:follow_index', None)
         cls.pagin_urls = (
             cls.index_url,
@@ -251,7 +252,7 @@ class PaginatorViewsTest(TestCase):
         )
         cls.ALL_POSTS = 13
         Post.objects.bulk_create(
-            [Post(author=cls.user, text=f"Тестовый пост {i}", group=cls.group)
+            [Post(author=cls.author, text=f"Тестовый пост {i}", group=cls.group)
                 for i in range(cls.ALL_POSTS)]
         )
 
@@ -262,15 +263,13 @@ class PaginatorViewsTest(TestCase):
         self.authorized_client.get(
             reverse(
                 'posts:profile_follow',
-                args=(self.user,)
+                args=(self.author,)
             )
         )
-#        cache.clear()
 
     def test_paginator_ten_records_on_first_page_and_three_on_second(self):
         """Проверка пагинатора. 10 записей на первой странице
         и 3 записи на второй странице"""
-#        cache.clear()
         pages = (
             ('?page=1', settings.POSTS_PER_PAGE),
             ('?page=2', self.ALL_POSTS - settings.POSTS_PER_PAGE)
@@ -282,7 +281,6 @@ class PaginatorViewsTest(TestCase):
                         response = self.authorized_client.get(
                             reverse(url, args=args) + page
                         )
-                        print(response.context.get('page_obj'))
                         self.assertEqual(
                             len(response.context['page_obj'].object_list),
                             numbers

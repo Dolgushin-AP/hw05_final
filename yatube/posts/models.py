@@ -5,6 +5,22 @@ from django.conf import settings
 User = get_user_model()
 
 
+class CreatedModel(models.Model):
+    """Абстрактная модель. Добавляет дату создания."""
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True,
+        db_index=True
+    )
+    text = models.TextField(
+        verbose_name='Текст',
+        help_text='Введите текст',
+    )
+
+    class Meta:
+        abstract = True
+
+
 class Group(models.Model):
     """ Модель для сообществ """
     title = models.CharField(
@@ -32,17 +48,7 @@ class Group(models.Model):
         return f"{self.title}"
 
 
-class TextModel(models.Model):
-    """ Модель для текста """
-    text = models.TextField(
-        verbose_name='Текст поста',
-        help_text='Введите текст поста',
-    )
-class Meta:
-        abstract = True
-
-
-class Post(models.Model):
+class Post(CreatedModel):
     """ Модель для постов """
     group = models.ForeignKey(
         Group,
@@ -52,15 +58,6 @@ class Post(models.Model):
         verbose_name='Группа',
         related_name='posts',
         help_text='Выберите группу из списка',
-    )
-    text = models.TextField(
-        verbose_name='Текст поста',
-        help_text='Введите текст поста',
-    )
-    pub_date = models.DateTimeField(
-        verbose_name='Дата публикации',
-        auto_now_add=True,
-        help_text='Заполняется автоматически',
     )
     author = models.ForeignKey(
         User,
@@ -84,7 +81,7 @@ class Post(models.Model):
         return self.text[:settings.CHAR_LIMIT]
 
 
-class Comment(models.Model):
+class Comment(CreatedModel):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
@@ -98,10 +95,6 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='Автор комментария'
-    )
-    text = models.TextField(
-        verbose_name='Текст комментария',
-        help_text='Оставьте свой комментарий'
     )
     created = models.DateTimeField(
         verbose_name='Дата комментария',

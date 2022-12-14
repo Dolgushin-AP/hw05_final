@@ -1,24 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.conf import settings
+from core.models import CreatedModel
 
 User = get_user_model()
-
-
-class CreatedModel(models.Model):
-    """Абстрактная модель. Добавляет дату создания."""
-    pub_date = models.DateTimeField(
-        verbose_name='Дата публикации',
-        auto_now_add=True,
-        db_index=True
-    )
-    text = models.TextField(
-        verbose_name='Текст',
-        help_text='Введите текст',
-    )
-
-    class Meta:
-        abstract = True
 
 
 class Group(models.Model):

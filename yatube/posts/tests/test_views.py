@@ -252,7 +252,11 @@ class PaginatorViewsTest(TestCase):
         )
         cls.ALL_POSTS = 13
         Post.objects.bulk_create(
-            [Post(author=cls.author, text=f"Тестовый пост {i}", group=cls.group)
+            [Post(
+                author=cls.author,
+                text=f"Тестовый пост {i}",
+                group=cls.group
+            )
                 for i in range(cls.ALL_POSTS)]
         )
 

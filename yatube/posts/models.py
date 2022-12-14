@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.conf import settings
+
 from core.models import CreatedModel
 
 User = get_user_model()
@@ -81,13 +82,9 @@ class Comment(CreatedModel):
         related_name='comments',
         verbose_name='Автор комментария'
     )
-    created = models.DateTimeField(
-        verbose_name='Дата комментария',
-        auto_now_add=True
-    )
 
     class Meta:
-        ordering = ('-created',)
+        ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 

@@ -1,13 +1,9 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import PostForm, CommentForm
 from .models import Group, Post, User, Follow
 from .utils import paginate
-from django.db.models import Q
-
-User = get_user_model()
 
 
 def index(request):
@@ -54,12 +50,10 @@ def profile(request, username):
 def post_detail(request, post_id):
     template = 'posts/post_detail.html'
     post = get_object_or_404(Post, pk=post_id)
-    author = post.author
     form = CommentForm()
-    comments = post.comments.select_related('author').all()
+    comments = post.comments.all()
     context = {
         'post': post,
-        'author': author,
         'comments': comments,
         'form': form,
     }
@@ -120,7 +114,7 @@ def add_comment(request, post_id):
 def follow_index(request):
     template = 'posts/follow.html'
     queryset = Post.objects.select_related('author', 'group').filter(
-        Q(author__following__user=request.user))
+        author__following__user=request.user)
     context = {'page_obj': paginate(queryset, request)}
     return render(request, template, context)
 
